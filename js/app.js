@@ -1,13 +1,13 @@
 /* ============ MY LIFE ARCADE — app ============ */
-const ROOT = window.ROOT || "";   /* "" on index.html, "../" inside arcades/ */
-const MEDIA = {"f0": [{"src": ROOT + "assets/images/f0-1.jpg", "name": "Miracle Garden", "text": "Our first time at Miracle Garden, all of us together in front of a wall of flowers.", "w": 206, "h": 206}, {"src": ROOT + "assets/images/f0-2.jpg", "name": "New school", "text": "Changing schools for the first time, from Global English School to Al Manahil, in our new white polos.", "w": 206, "h": 206}, {"src": ROOT + "assets/images/f0-3.jpg", "name": "First laptop", "text": "Me and my brother with our very first laptop.", "w": 206, "h": 206}, {"src": ROOT + "assets/images/f0-4.jpg", "name": "First basketball game", "text": "Me and my brother at our first basketball game, wearing our jerseys.", "w": 206, "h": 206}, {"src": ROOT + "assets/images/f0-5.jpg", "name": "UAE falcon", "text": "Us posing with a UAE falcon.", "w": 604, "h": 453}], "f1": [{"src": ROOT + "assets/images/f1-1.jpg", "name": "Dad", "text": "My dad.", "w": 480, "h": 640}, {"src": ROOT + "assets/images/f1-2.jpg", "name": "Mom", "text": "My mom.", "w": 480, "h": 640}, {"src": ROOT + "assets/images/f1-3.jpg", "name": "My sister", "text": "My sister.", "w": 481, "h": 640}, {"src": ROOT + "assets/images/f1-4.jpg", "name": "Us as a family", "text": "Us as a family, all together.", "w": 640, "h": 481}, {"src": ROOT + "assets/images/f1-5.jpg", "name": "Me & my brother", "text": "Me and my brother.", "w": 480, "h": 640}, {"src": ROOT + "assets/images/f1-6.jpg", "name": "Grandmother", "text": "My grandmother, my absolute favorite.", "fave": true, "w": 480, "h": 640}], "f2": [{"src": ROOT + "assets/images/f2-0.jpg", "name": "My second family", "text": "My second family.", "w": 1400, "h": 1050, "main": true}, {"src": ROOT + "assets/images/f2-1.jpg", "name": "Friends 01", "w": 720, "h": 540}, {"src": ROOT + "assets/images/f2-2.jpg", "name": "Friends 02", "w": 540, "h": 720}, {"src": ROOT + "assets/images/f2-3.jpg", "name": "Friends 03", "w": 540, "h": 720}, {"src": ROOT + "assets/images/f2-4.jpg", "name": "Friends 04", "w": 540, "h": 720}, {"src": ROOT + "assets/images/f2-5.jpg", "name": "Friends 05", "w": 720, "h": 540}, {"src": ROOT + "assets/images/f2-6.jpg", "name": "Friends 06", "w": 720, "h": 405}, {"src": ROOT + "assets/images/f2-7.jpg", "name": "Friends 07", "text": "", "w": 1024, "h": 768}, {"src": ROOT + "assets/images/embedded-photo.jpg", "name": "Friends 08", "w": 720, "h": 960}], "f3": [{"src": ROOT + "assets/images/f3-1.jpg", "name": "My love ♥", "text": "My love ♥", "w": 450, "h": 600}, {"src": ROOT + "assets/images/f3-2.jpg", "name": "My favorite person ♥", "text": "My favorite person ♥", "w": 450, "h": 600}, {"src": ROOT + "assets/images/f3-3.jpg", "name": "Me & my love ♥", "text": "Me & my love ♥", "w": 450, "h": 600}, {"src": ROOT + "assets/images/f3-4.jpg", "name": "Us ♥", "text": "Us ♥", "w": 450, "h": 600}, {"src": ROOT + "assets/images/f3-5.jpg", "name": "Silly us ♥", "text": "Silly us ♥", "w": 450, "h": 600}], "cast": [ROOT + "assets/images/cast-1.jpg", ROOT + "assets/images/cast-2.jpg", ROOT + "assets/images/cast-3.jpg", ROOT + "assets/images/cast-4.jpg", ROOT + "assets/images/cast-5.jpg", ROOT + "assets/images/cast-6.jpg"], "food": ROOT + "assets/images/food.jpg", "song": ROOT + "assets/video/song.mp4", "movie": ROOT + "assets/video/movie.mp4", "foodWH": [520, 798]};
+const ROOT = window.ROOT || "";
+const MEDIA = {"f0": [{"src": ROOT + "assets/images/childhood_memories/f0-1.jpg", "name": "Miracle Garden", "text": "Our first time at Miracle Garden, all of us together in front of a wall of flowers.", "w": 206, "h": 206}, {"src": ROOT + "assets/images/childhood_memories/f0-2.jpg", "name": "New school", "text": "Changing schools for the first time, from Global English School to Al Manahil, in our new white polos.", "w": 206, "h": 206}, {"src": ROOT + "assets/images/childhood_memories/f0-3.jpg", "name": "First laptop", "text": "Me and my brother with our very first laptop.", "w": 206, "h": 206}, {"src": ROOT + "assets/images/childhood_memories/f0-4.jpg", "name": "First basketball game", "text": "Me and my brother at our first basketball game, wearing our jerseys.", "w": 206, "h": 206}, {"src": ROOT + "assets/images/childhood_memories/f0-5.jpg", "name": "UAE falcon", "text": "Us posing with a UAE falcon.", "w": 604, "h": 453}], "f1": [{"src": ROOT + "assets/images/family_relatives/f1-1.jpg", "name": "Dad", "text": "My dad.", "w": 480, "h": 640}, {"src": ROOT + "assets/images/family_relatives/f1-2.jpg", "name": "Mom", "text": "My mom.", "w": 480, "h": 640}, {"src": ROOT + "assets/images/family_relatives/f1-3.jpg", "name": "My sister", "text": "My sister.", "w": 481, "h": 640}, {"src": ROOT + "assets/images/family_relatives/f1-4.jpg", "name": "Us as a family", "text": "Us as a family, all together.", "w": 640, "h": 481}, {"src": ROOT + "assets/images/family_relatives/f1-5.jpg", "name": "Me & my brother", "text": "Me and my brother.", "w": 480, "h": 640}, {"src": ROOT + "assets/images/family_relatives/f1-6.jpg", "name": "Grandmother", "text": "My grandmother, my absolute favorite.", "fave": true, "w": 480, "h": 640}], "f2": [{"src": ROOT + "assets/images/my_friends/f2-0.jpg", "name": "My second family", "text": "My second family.", "w": 1400, "h": 1050, "main": true}, {"src": ROOT + "assets/images/my_friends/f2-1.jpg", "name": "Friends 01", "w": 720, "h": 540}, {"src": ROOT + "assets/images/my_friends/f2-2.jpg", "name": "Friends 02", "w": 540, "h": 720}, {"src": ROOT + "assets/images/my_friends/f2-3.jpg", "name": "Friends 03", "w": 540, "h": 720}, {"src": ROOT + "assets/images/my_friends/f2-4.jpg", "name": "Friends 04", "w": 540, "h": 720}, {"src": ROOT + "assets/images/my_friends/f2-5.jpg", "name": "Friends 05", "w": 720, "h": 540}, {"src": ROOT + "assets/images/my_friends/f2-6.jpg", "name": "Friends 06", "w": 720, "h": 405}, {"src": ROOT + "assets/images/my_friends/f2-7.jpg", "name": "Friends 07", "text": "", "w": 1024, "h": 768}, {"src": ROOT + "assets/images/my_friends/embedded-photo.jpg", "name": "Friends 08", "w": 720, "h": 960}], "f3": [{"src": ROOT + "assets/images/me_and_my_love/f3-1.jpg", "name": "My love ♥", "text": "My love ♥", "w": 450, "h": 600}, {"src": ROOT + "assets/images/me_and_my_love/f3-2.jpg", "name": "My favorite person ♥", "text": "My favorite person ♥", "w": 450, "h": 600}, {"src": ROOT + "assets/images/me_and_my_love/f3-3.jpg", "name": "Me & my love ♥", "text": "Me & my love ♥", "w": 450, "h": 600}, {"src": ROOT + "assets/images/me_and_my_love/f3-4.jpg", "name": "Us ♥", "text": "Us ♥", "w": 450, "h": 600}, {"src": ROOT + "assets/images/me_and_my_love/f3-5.jpg", "name": "Silly us ♥", "text": "Silly us ♥", "w": 450, "h": 600}], "cast": [ROOT + "assets/images/my_favorite_movie/cast-1.jpg", ROOT + "assets/images/my_favorite_movie/cast-2.jpg", ROOT + "assets/images/my_favorite_movie/cast-3.jpg", ROOT + "assets/images/my_favorite_movie/cast-4.jpg", ROOT + "assets/images/my_favorite_movie/cast-5.jpg", ROOT + "assets/images/my_favorite_movie/cast-6.jpg"], "food": ROOT + "assets/images/my_favorite_food/food.jpg", "song": ROOT + "assets/video/song.mp4", "movie": ROOT + "assets/video/movie.mp4", "foodWH": [520, 798]};
 
 const MEM = {};
 const SESS = new Set(["score","coins","t0","booted","mt0"]);
 const _st = k => { try { return SESS.has(k) ? sessionStorage : localStorage; } catch(e){ return null; } };
 const load = k => { try { const v = _st(k).getItem("mla:" + k); if (v !== null) return v; } catch(e){} return MEM[k] ?? null; };
 const save = (k,v) => { MEM[k] = v; try { _st(k).setItem("mla:" + k, v); } catch(e){} };
-const PAGES = ["childhood.html","family.html","friends.html","love.html","food.html","movie.html","song.html","jokes.html","memory.html","wall.html","secret.html"].map(p => ROOT + "arcades/" + p);
+const PAGES = ["childhood_memories.html","family_relatives.html","my_friends.html","me_and_my_love.html","my_favorite_food.html","my_favorite_movie.html","my_song.html","joke_time.html","arcades/memory.html","arcades/wall.html","arcades/secret.html"].map(p => ROOT + p);
 const $ = id => document.getElementById(id);
 const esc = s => String(s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 const pad2 = n => String(n).padStart(2,"0");
@@ -288,7 +288,7 @@ function renderHome(){
   $("grid").innerHTML = folders.map((f, i) => {
     if (f.hidden && !SECRET_ON) return "";
     const info = f.love ? "LOCKED ♥" : f.t === "gallery" ? f.photos.length + " photos" : hint[f.t];
-    return `<button class="unit${f.hidden ? " secret-u" : ""}${f.love ? " love-u" : ""}" style="--i:${i};--c:${f.c}" data-theme="${["childhood","family","friends","love","food","movie","song","jokes","memory","guest","secret"][i]}" data-i="${i}" data-cursor="PLAY" aria-label="Game ${i+1}: ${esc(f.name)}">${f.love ? loveAura() : ""}
+    return `<a class="unit${f.hidden ? " secret-u" : ""}${f.love ? " love-u" : ""}" style="--i:${i};--c:${f.c}" href="${PAGES[i]}" data-theme="${["childhood","family","friends","love","food","movie","song","jokes","memory","guest","secret"][i]}" data-i="${i}" data-cursor="PLAY" aria-label="Game ${i+1}: ${esc(f.name)}">${f.love ? loveAura() : ""}
       <div class="cab">
         <div class="shell"></div>
         <div class="mq"><b>${f.g}</b></div><div class="bulbs"></div>
@@ -303,14 +303,15 @@ function renderHome(){
         <div class="kick"></div>
       </div>
       <div class="ulabel"><b>${esc(f.name)}</b><small>GAME ${pad2(i+1)} · ${info}</small></div>${f.love ? loveAuraTop() : ""}
-    </button>`;
+    </a>`;
   }).join("");
   $("grid").querySelectorAll(".unit").forEach(u => tilt(u, 6));
 }
 function hexRgb(h){ const n = parseInt(h.slice(1), 16); return `${n>>16&255},${n>>8&255},${n&255}`; }
 
-$("grid").addEventListener("click", e => {
+if ($("grid")) $("grid").addEventListener("click", e => {
   const u = e.target.closest(".unit"); if (!u || u.classList.contains("go")) return;
+  e.preventDefault();
   const i = +u.dataset.i; u.classList.add("go");
   SFX.coin(); coins++; save("coins", String(coins)); setCoins(); ach("coin");
   const r = u.getBoundingClientRect(); addScore(1250, r.left + r.width/2 - 30, r.top + r.height*.3);
@@ -354,11 +355,13 @@ function openFolder(i){
   visit(i); MUSIC.room(i);
   let k = 0; $("title").innerHTML = f.name.split(" ").map(w => `<span class="wd">${[...w].map(ch => `<span class="ch" style="--k:${k++}">${esc(ch)}</span>`).join("")}</span>`).join(" ");
   $("title").setAttribute("aria-label", f.name);
-  $("home").hidden = true; $("inside").hidden = false; crt($("inside"), "on");
+  if ($("home")) $("home").hidden = true;
+  $("inside").hidden = false; crt($("inside"), "on");
   scrollTo(0, 0);
   renderBody(); renderPager();
 }
 function goHome(){
+  if (!$("home")){ location.href = ROOT + "index.html"; return; }
   document.body.classList.remove("love"); delete document.body.dataset.room; field.mode(false, null); loveOpen = false;
   $("inside").hidden = true; $("home").hidden = false; current = null;
   renderHome(); MUSIC.home();

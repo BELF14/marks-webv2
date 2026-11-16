@@ -176,7 +176,7 @@ main{position:relative;z-index:3;max-width:1240px;margin:0 auto;padding:calc(env
   .grid .unit:nth-child(even){--y:0px;--tr:-2.5deg;--sc:.98}
   .grid .unit:nth-child(11):last-child{grid-column:2/4;--tr:0deg;--sc:1.04}
 }
-.unit{--rx:0deg;--ry:0deg;--mx:50%;--my:50%;--j:0;--c:var(--accent);position:relative;display:block;text-align:center;opacity:0;transform:translateY(80px);transition:opacity .9s var(--ease) calc(var(--i)*70ms + .25s),transform 1s var(--ease) calc(var(--i)*70ms + .25s),translate .6s var(--ease),rotate .6s var(--ease),scale .6s var(--ease)}
+.unit{--rx:0deg;--ry:0deg;--mx:50%;--my:50%;--j:0;--c:var(--accent);position:relative;display:block;text-align:center;color:inherit;text-decoration:none;opacity:0;transform:translateY(80px);transition:opacity .9s var(--ease) calc(var(--i)*70ms + .25s),transform 1s var(--ease) calc(var(--i)*70ms + .25s),translate .6s var(--ease),rotate .6s var(--ease),scale .6s var(--ease)}
 .ready .unit{opacity:1;transform:none}
 .grid.hold .unit{opacity:0;transform:translateY(80px);transition:none}
 .unit::after{content:"";position:absolute;left:4%;right:4%;bottom:52px;height:34px;border-radius:50%;background:radial-gradient(closest-side,color-mix(in srgb,var(--c) 45%,transparent),transparent);filter:blur(6px);opacity:.35;transition:opacity .5s;z-index:-1}
