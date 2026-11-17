@@ -66,6 +66,10 @@ The setup script creates the `messages` table, access policies, input constraint
 
 ## Changelog
 
+### 1.1.1 — 2026-11-17
+
+- Fixed black/blank page rendering on some Android phones and tablets by removing the canvas low-latency option that could place the visual-effects canvas on a separate hardware layer.
+
 ### 1.1.0 — 2026-11-17
 
 - Added Supabase-backed shared Message Wall notes and photo-booth images.

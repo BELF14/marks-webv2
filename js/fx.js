@@ -13,7 +13,9 @@
   const cv = D.createElement("canvas"); cv.setAttribute("aria-hidden", "true");
   cv.style.cssText = "position:fixed;inset:0;width:100%;height:100%;z-index:59;pointer-events:none";
   const st = D.createElement("style"); st.textContent = "#home{overflow-x:clip}"; D.head.appendChild(st);
-  B.appendChild(cv); const g = cv.getContext("2d", { desynchronized: true });
+  /* No { desynchronized: true } here: on some Android phones/tablets that "low-latency" mode draws this full-screen canvas on its own
+     hardware layer and the page underneath it (header, games, carpet) goes black while only the boids still show. */
+  B.appendChild(cv); const g = cv.getContext("2d");
   const size = () => { const d = 1; W = innerWidth;   // effects are chunky pixels: 1x is enough and costs 4x less on retina screens
     H = innerHeight; cv.width = W * d; cv.height = H * d; g.setTransform(d, 0, 0, d, 0, 0); };
   size(); addEventListener("resize", size);
