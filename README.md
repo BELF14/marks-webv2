@@ -13,6 +13,7 @@ The project uses HTML, CSS, and vanilla JavaScript. It has no package installati
 - Photo galleries with captions and an interactive lightbox.
 - Category-specific experiences, including a recipe checklist, movie cast profiles, karaoke controls, and flip-card jokes.
 - Shared arcade effects, scoring, sound, and browser-based progress storage.
+- A shared Message Wall with visitor notes and photo-booth images, backed by Supabase.
 - Responsive styling and reduced-motion support.
 
 ## Pages
@@ -53,7 +54,23 @@ python -m http.server 8000
 
 Then visit `http://localhost:8000`. Serving locally is recommended for consistent browser media and storage behavior.
 
+## Supabase Message Wall
+
+The Message Wall in `arcades/wall.html` uses Supabase to share visitor notes and photo-booth images across visitors. To configure the backend:
+
+1. Run `supabase-setup.sql` in the SQL Editor for the Supabase project used by the wall.
+2. To use a different project, update `window.__SUPABASE__` in `arcades/wall.html` with that project's URL and **publishable key**. Never put a secret or service-role key in browser code.
+3. Deploy the site and confirm the Message Wall can load and post notes.
+
+The setup script creates the `messages` table, access policies, input constraints, basic posting limits, and the function used to remove a visitor's own notes. Notes and photos are public to Message Wall visitors. With Supabase configured, a backend error is shown rather than silently saving a note only on the current device. Without a configured backend, the existing local-only mode is used.
+
 ## Changelog
+
+### 1.1.0 — 2026-11-17
+
+- Added Supabase-backed shared Message Wall notes and photo-booth images.
+- Added database-side validation, access policies, basic posting limits, and owner-restricted note removal through `supabase-setup.sql`.
+- Documented Supabase setup and safe use of a publishable key.
 
 ### 1.0.1 — 2026-11-17
 

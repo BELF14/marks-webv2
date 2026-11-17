@@ -868,6 +868,49 @@ function ago(sec){
   if (s < 86400) return Math.floor(s/3600) + " HR AGO"; return Math.floor(s/86400) + " DAYS AGO";
 }
 
+/* ---------------- Supabase message wall (shared notes + photo-booth snaps) ----------------
+   Config lives in arcades/wall.html:  window.__SUPABASE__ = {url, key}   (key = the *publishable* key only)
+   Safety is enforced in the database (RLS + column grants + constraints), see supabase-setup.sql. */
+const SB = (function(){
+  const c = window.__SUPABASE__;
+  if (!c || typeof c.url !== "string" || typeof c.key !== "string" || !c.key) return null;
+  return /^(https:\/\/[a-z0-9-]+\.supabase\.co|http:\/\/(localhost|127\.0\.0\.1):\d+)$/.test(c.url) ? {url:c.url, key:c.key} : null;
+})();
+const OWNER = (function(){
+  let t = load("owner");
+  if (!t || t.length < 16){
+    const b = new Uint8Array(16); (window.crypto || {}).getRandomValues ? crypto.getRandomValues(b) : b.forEach((_, i) => b[i] = Math.random()*256);
+    t = Array.from(b, x => x.toString(16).padStart(2, "0")).join(""); save("owner", t);
+  }
+  return t;
+})();
+async function sbFetch(path, opt = {}){
+  const ctl = new AbortController(), t = setTimeout(() => ctl.abort(), 12000);
+  try {
+    const res = await fetch(SB.url + "/rest/v1" + path, {signal:ctl.signal, ...opt, headers:{apikey:SB.key, "Content-Type":"application/json", ...(opt.headers || {})}});
+    const data = await res.json().catch(() => null);
+    if (!res.ok){
+      const rule = data && data.code === "P0001";                       // our own friendly rate-limit messages
+      throw Object.assign(new Error(rule ? data.message : "COULD NOT SAVE THAT NOTE"), {status:res.status});
+    }
+    return data;
+  } finally { clearTimeout(t); }
+}
+const SB_COLS = "id,name,body,color,photo,created_at";
+function sbNote(r){ const mine = jget("mine", []); return {id:r.id, name:r.name, body:r.body, color:r.color, photo:r.photo, at:Date.parse(r.created_at)/1000, mine:mine.includes(r.id)}; }
+async function sbList(){ return (await sbFetch(`/messages?select=${SB_COLS}&order=created_at.desc&limit=60`)).map(sbNote); }
+async function sbPost(m){
+  const rows = await sbFetch(`/messages?select=${SB_COLS}`, {method:"POST", headers:{Prefer:"return=representation"}, body:JSON.stringify({name:m.name, body:m.body, color:m.color, photo:m.photo || null, owner_token:OWNER})});
+  const r = rows && rows[0]; if (!r) throw new Error("COULD NOT PIN");
+  jset("mine", [...jget("mine", []), r.id].slice(-200));
+  return sbNote(r);
+}
+async function sbDelete(id){
+  const ok = await sbFetch("/rpc/delete_my_message", {method:"POST", body:JSON.stringify({p_id:Number(id), p_owner:OWNER})});
+  if (ok !== true) throw new Error("not yours");
+  jset("mine", jget("mine", []).filter(x => String(x) !== String(id)));
+}
+
 /* ---------------- background chiptune ---------------- */
 const MUSIC = (function(){
   let gain = null, timer = 0, step = 0, next = 0, want = 0, unlocked = false;
@@ -1225,12 +1268,13 @@ function guestHtml(){
       <div class="wf-photo"><button type="button" class="px-btn" id="wf-booth" data-cursor="BOOTH">📷 PHOTO BOOTH</button><span class="wf-ph" id="wf-ph" hidden><img id="wf-phi" alt="Your photo"><button type="button" id="wf-phx" aria-label="Remove photo">✕</button></span></div>
       <button class="px-btn solid" id="wf-go" type="submit" data-cursor="PIN">PIN IT ▶</button>
       <p class="wf-msg" id="wf-msg" role="status"></p>
-      ${API ? "" : `<p class="wf-off">OFFLINE MODE · notes are saved on this device only.</p>`}
+      ${API || SB ? "" : `<p class="wf-off">OFFLINE MODE · notes are saved on this device only.</p>`}
     </form>
     <div class="notes" id="notes" aria-live="polite"><p class="notes-empty">LOADING MESSAGES…</p></div>
   </div>`;
 }
 async function loadNotes(){
+  if (SB){ try { return {list:await sbList(), ok:true}; } catch(e){ return {list:[], ok:false}; } }
   try { return {list:await api("/api/messages"), ok:true}; }
   catch(e){ return {list:jget("msgs", []), ok:!API}; }
 }
@@ -1257,8 +1301,8 @@ function guestWire(){
     $("wf-go").disabled = true; msg.textContent = "PINNING…";
     try {
       let m;
-      try { m = await api("/api/messages", {method:"POST", body:JSON.stringify({name, body:text, color:wallColor, photo:wallPhoto})}); }
-      catch(err){ if (API) throw err; const all = jget("msgs", []); m = {id:Date.now(), name, body:text, color:wallColor, photo:wallPhoto, mine:true, at:Date.now()/1000}; all.unshift(m); jset("msgs", all); }
+      try { m = SB ? await sbPost({name, body:text, color:wallColor, photo:wallPhoto}) : await api("/api/messages", {method:"POST", body:JSON.stringify({name, body:text, color:wallColor, photo:wallPhoto})}); }
+      catch(err){ if (API || SB) throw err; const all = jget("msgs", []); m = {id:Date.now(), name, body:text, color:wallColor, photo:wallPhoto, mine:true, at:Date.now()/1000}; all.unshift(m); jset("msgs", all); }
       body.value = ""; $("wf-count").textContent = "0/280"; wallPhoto = null; paintPhoto(); msg.textContent = "PINNED ✓ THANK YOU"; SFX.unlock(); ach("guest");
       const r = $("wf-go").getBoundingClientRect(); field.burst(r.left + r.width/2, r.top, 24); addScore(300, r.left + r.width/2, r.top - 10);
       await drawNotes(m.id);
@@ -1270,8 +1314,8 @@ function guestWire(){
     if (ph){ SFX.select(); openLB([{src:ph.src, name:"Photo booth", text:"", w:ph.naturalWidth, h:ph.naturalHeight}], 0, ph); return; }
     const x = e.target.closest(".nx"); if (!x) return;
     const card = x.closest(".nt"); card.classList.add("gone"); SFX.back();
-    try { await api(`/api/messages/${x.dataset.id}`, {method:"DELETE"}); }
-    catch(err){ if (API){ card.classList.remove("gone"); toast("COULD NOT REMOVE THAT NOTE"); return; } jset("msgs", jget("msgs", []).filter(m => String(m.id) !== x.dataset.id)); }
+    try { SB ? await sbDelete(x.dataset.id) : await api(`/api/messages/${x.dataset.id}`, {method:"DELETE"}); }
+    catch(err){ if (API || SB){ card.classList.remove("gone"); toast("COULD NOT REMOVE THAT NOTE"); return; } jset("msgs", jget("msgs", []).filter(m => String(m.id) !== x.dataset.id)); }
     setTimeout(drawNotes, 320);
   });
 }
