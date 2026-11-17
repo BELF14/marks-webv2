@@ -13,7 +13,9 @@
   const cv = D.createElement("canvas"); cv.setAttribute("aria-hidden", "true");
   cv.style.cssText = "position:fixed;inset:0;width:100%;height:100%;z-index:59;pointer-events:none";
   const st = D.createElement("style"); st.textContent = "#home{overflow-x:clip}"; D.head.appendChild(st);
-  B.appendChild(cv); const g = cv.getContext("2d", { desynchronized: true });
+  /* No { desynchronized: true } here: on some Android phones/tablets that "low-latency" mode draws this full-screen canvas on its own
+     hardware layer and the page underneath it (header, games, carpet) goes black while only the boids still show. */
+  B.appendChild(cv); const g = cv.getContext("2d");
   const size = () => { const d = 1; W = innerWidth;   // effects are chunky pixels: 1x is enough and costs 4x less on retina screens
     H = innerHeight; cv.width = W * d; cv.height = H * d; g.setTransform(d, 0, 0, d, 0, 0); };
   size(); addEventListener("resize", size);
@@ -123,7 +125,7 @@
   D.addEventListener("pointerover", e => { const b = e.target.closest?.(".unit")?.querySelector(".ulabel b"); if (b && !b._s) scramble(b); });
 
   /* ---------- pixel-dissolve entry transition ---------- */
-  if (!$("boot")) {
+  if (!$("boot") && FN) {   // desktop only: on phones/tablets it covered every new page for 1.25s and read as lag
     const c = D.createElement("canvas"); c.width = W; c.height = H;
     c.style.cssText = "position:fixed;inset:0;width:100%;height:100%;z-index:90;pointer-events:none"; B.appendChild(c);
     const x = c.getContext("2d"), S = W < 700 ? 30 : 44, cols = Math.ceil(W / S), rows = Math.ceil(H / S), mid = Math.hypot(cols / 2, rows / 2), T0 = performance.now(), DUR = 1250;
@@ -161,6 +163,7 @@
   let grids = [], dirty = true, sun = null, home = null;
   addEventListener("scroll", () => dirty = true, { passive: true }); addEventListener("resize", () => dirty = true);
   function scene() {
+    if (!FN) return;   // touch: no pointer to drive the parallax, and the skew/wave re-measured every cabinet on every scroll frame (scroll jank)
     if (f % 30 === 1) { grids = $$("#grid,.photos"); sun = D.querySelector(".horizon .sun"); home = $("home"); dirty = true; }
     vel += ((scrollY - lastY) - vel) * .15; lastY = scrollY;
     const sk = Math.max(-4, Math.min(4, vel * .12)), tf = Math.abs(sk) > .03 ? `skewY(${sk.toFixed(2)}deg)` : "";
@@ -181,7 +184,7 @@
   (function loop(now) {
     requestAnimationFrame(loop);
     if (prev) ema += (Math.min(now - prev, 100) - ema) * .05; prev = now;
-    if (D.hidden || now - lastT < (ema > 24 ? 30 : 15)) return; lastT = now; f++;   // adaptive: drop to ~30fps when the device is struggling
+    if (D.hidden || now - lastT < (!FN ? 32 : ema > 24 ? 30 : 15)) return; lastT = now; f++;   // adaptive: drop to ~30fps when the device is struggling
     if (B.classList.contains("lock-scroll")) { if (f % 10 === 0) g.clearRect(0, 0, W, H); return; }   // lightbox open: stop animating
     if (f % 40 === 1) acc = getComputedStyle(B).getPropertyValue("--accent-rgb").trim() || acc;
     g.clearRect(0, 0, W, H);
