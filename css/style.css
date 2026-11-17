@@ -39,7 +39,7 @@ small,.px{font:400 8px/1.6 var(--px);letter-spacing:.06em;text-transform:upperca
 #progress{position:fixed;top:0;left:0;right:0;height:2px;z-index:70;background:repeating-linear-gradient(90deg,var(--accent) 0 6px,transparent 6px 8px);transform-origin:0 50%;transform:scaleX(0);box-shadow:0 0 8px var(--accent)}
 
 /* ---------- cursor: pixel reticle ---------- */
-#cursor{position:fixed;inset:0;z-index:90;pointer-events:none;display:none}
+#cursor{position:fixed;inset:0;z-index:9999;pointer-events:none;display:none}   /* above every overlay (booth 95, trophies 97, hi-score 98, boot 100) so the reticle never disappears */
 .has-cursor #cursor{display:block}
 .has-cursor,.has-cursor *{cursor:none!important}
 .has-cursor .ed,.has-cursor input{cursor:text!important}
