@@ -1157,3 +1157,11 @@ body.love #main{position:relative;z-index:2}
 @media(max-width:900px){.lovegrid{grid-template-columns:repeat(3,minmax(0,1fr))}}
 @media(max-width:700px){.lovegrid{grid-template-columns:repeat(2,minmax(0,1fr));gap:26px 18px;padding:28px 8px 44px}}
 @media(max-width:700px){.lovegrid .lv:last-child:nth-child(odd){grid-column:1/-1;justify-self:center;width:calc(50% - 9px)}}   /* centre the odd photo out instead of leaving it orphaned */
+
+/* ---- phones & tablets (touch): calmer always-on loops + no tap delay ----
+   Ten cabinets each had a dozen looping glows/blinks, which held phones at ~20fps and made taps feel stuck.
+   On touch screens those loops now play once and rest; desktop (mouse) keeps the full show. */
+html{touch-action:manipulation;-webkit-tap-highlight-color:transparent}
+@media(pointer:coarse),(hover:none){
+  .unit,.unit *,.unit *::before,.unit *::after,.floor,.hud::after,.bulbs{animation-iteration-count:1!important}
+}

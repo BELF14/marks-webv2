@@ -13,6 +13,8 @@ The project uses HTML, CSS, and vanilla JavaScript. It has no package installati
 - Photo galleries with captions and an interactive lightbox.
 - Category-specific experiences, including a recipe checklist, movie cast profiles, karaoke controls, and flip-card jokes.
 - Shared arcade effects, scoring, sound, and browser-based progress storage.
+- Rate-limited and one-time XP rewards to discourage repetitive score farming.
+- Touch-device performance improvements, including lighter effects and shorter transitions.
 - A shared Message Wall with visitor notes and photo-booth images, backed by Supabase.
 - Responsive styling and reduced-motion support.
 
@@ -65,6 +67,14 @@ The Message Wall in `arcades/wall.html` uses Supabase to share visitor notes and
 The setup script creates the `messages` table, access policies, input constraints, basic posting limits, and the function used to remove a visitor's own notes. Notes and photos are public to Message Wall visitors. With Supabase configured, a backend error is shown rather than silently saving a note only on the current device. Without a configured backend, the existing local-only mode is used.
 
 ## Changelog
+
+### 1.2.0 — 2026-11-17
+
+- Improved touch-device responsiveness by reducing animation, canvas, and transition workloads.
+- Prevented repeated actions from farming unlimited XP; discovery rewards are one-time and repeatable rewards are rate-limited.
+- Capped decorative effects and sound playback bursts to reduce device load.
+- Fixed stale Memory Match timers and score submissions when starting a new round.
+- Prevented duplicate Message Wall submissions while a post is in progress.
 
 ### 1.1.1 — 2026-11-17
 

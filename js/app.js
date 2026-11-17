@@ -77,7 +77,7 @@ const SFX = (function(){
     g.gain.setValueAtTime(vol, t); g.gain.exponentialRampToValueAtTime(.0001, t + d);
     o.connect(g); g.connect(a.destination); o.start(t); o.stop(t + d + .02);
   }
-  return {
+  const api = {
     get on(){ return on; }, set on(v){ on = v; },
     ctx,
     coin(){ tone(988,0,.08); tone(1319,.08,.35); },
@@ -91,6 +91,12 @@ const SFX = (function(){
     heart(){ tone(1046 + Math.random()*300,0,.08,"triangle",.05); },
     point(){ tone(1568,0,.05,"square",.025); }
   };
+  // Button-mashing used to start a new oscillator per click and choke phones; repeatable UI sounds now have a 60ms gap.
+  let lastSfx = 0;
+  for (const k of ["coin","blip","select","flip","back","heart","point"]){
+    const fn = api[k]; api[k] = (...a) => { const n = performance.now(); if (n - lastSfx < 60) return; lastSfx = n; fn(...a); };
+  }
+  return api;
 })();
 $("snd").onclick = () => { SFX.on = !SFX.on; $("snd").setAttribute("aria-pressed", SFX.on); $("snd").textContent = SFX.on ? "♪ ON" : "♪ OFF"; if (SFX.on) SFX.blip(); };
 
@@ -168,10 +174,14 @@ const field = (function(){
     const home = !room && !love, cols = W < 700 ? (home ? 5 : 4) : (home ? 11 : 8), rows = W < 700 ? (home ? 10 : 7) : (home ? 7 : 5), skip = home ? .1 : .3; items = [];
     for (let r = 0; r < rows; r++) for (let c = 0; c < cols; c++){ if (Math.random() < skip) continue; items.push(mk((c + .15 + Math.random()*.7)/cols*W, (r + .15 + Math.random()*.7)/rows*H)); }
   }
-  function size(){ dpr = Math.min(devicePixelRatio || 1, 2); W = innerWidth; H = innerHeight; cv.width = W*dpr; cv.height = H*dpr; cx.setTransform(dpr,0,0,dpr,0,0); seed(); }
+  /* touch screens: 1x is plenty for thin doodle lines and is ~4x cheaper to paint */
+  function size(){ dpr = FINE ? Math.min(devicePixelRatio || 1, 2) : 1; W = innerWidth; H = innerHeight; cv.width = W*dpr; cv.height = H*dpr; cx.setTransform(dpr,0,0,dpr,0,0); seed(); }
   size(); addEventListener("resize", size);
   addEventListener("pointermove", e => { mx = e.clientX; my = e.clientY; }, {passive:true});
+  let lastDraw = 0;
   function frame(t){
+    if (!FINE && !CALM && t - lastDraw < 32){ requestAnimationFrame(frame); return; }   // phones/tablets: ~30fps keeps taps and scrolling responsive
+    lastDraw = t;
     cx.clearRect(0,0,W,H);
     cx.lineJoin = "round"; cx.lineCap = "round";
     for (const it of items){
@@ -194,7 +204,7 @@ const field = (function(){
   }
   if (!CALM) requestAnimationFrame(frame); else requestAnimationFrame(() => { frame(0); });
   return {
-    burst(x, y, n=24, cols){ cols = cols || (love ? LCOLS : COLS); for (let i = 0; i < n; i++){ const a = Math.random()*6.283, v = 2 + Math.random()*6; sparks.push({x, y, vx:Math.cos(a)*v, vy:Math.sin(a)*v - 1, l:1, z:3 + Math.round(Math.random()*3), c:cols[i % cols.length]}); } },
+    burst(x, y, n=24, cols){ if (sparks.length > 360) return; cols = cols || (love ? LCOLS : COLS); for (let i = 0; i < n; i++){ const a = Math.random()*6.283, v = 2 + Math.random()*6; sparks.push({x, y, vx:Math.cos(a)*v, vy:Math.sin(a)*v - 1, l:1, z:3 + Math.round(Math.random()*3), c:cols[i % cols.length]}); } },
     spawn(x, y){
       const near = items.find(it => Math.hypot(it.x + it.ox - x, it.y + it.oy - y) < it.s * .6);
       if (near){ items.splice(items.indexOf(near), 1); setTimeout(() => items.push(mk(Math.random()*W, Math.random()*H, true)), 700); return true; }
@@ -314,9 +324,11 @@ if ($("grid")) $("grid").addEventListener("click", e => {
   e.preventDefault();
   const i = +u.dataset.i; u.classList.add("go");
   SFX.coin(); coins++; save("coins", String(coins)); setCoins(); ach("coin");
-  const r = u.getBoundingClientRect(); addScore(1250, r.left + r.width/2 - 30, r.top + r.height*.3);
-  setTimeout(() => { const s = u.querySelector(".scr").getBoundingClientRect(); field.burst(s.left + s.width/2, s.top + s.height/2, 26, [hexRgb(folders[i].c), "255,255,255"]); SFX.select(); }, 480);
-  setTimeout(() => goLevel(i, u.querySelector(".scr").getBoundingClientRect()), CALM ? 0 : 950);
+  const r = u.getBoundingClientRect();
+  award("cab:" + i, ONCE, 1250, r.left + r.width/2 - 30, r.top + r.height*.3);   // the +1250 is for discovering a cabinet, once each
+  const lead = CALM ? 0 : FINE ? 950 : 420;   // phones/tablets get a much shorter wind-up before the level opens
+  setTimeout(() => { const s = u.querySelector(".scr").getBoundingClientRect(); field.burst(s.left + s.width/2, s.top + s.height/2, 26, [hexRgb(folders[i].c), "255,255,255"]); SFX.select(); }, FINE ? 480 : 160);
+  setTimeout(() => goLevel(i, u.querySelector(".scr").getBoundingClientRect()), lead);
 });
 
 function wipe(fromRect, label, mid){
@@ -327,7 +339,7 @@ function wipe(fromRect, label, mid){
     {left:r.left+"px", top:r.top+"px", width:r.width+"px", height:r.height+"px", opacity:1},
     {left:r.left+"px", top:r.top+"px", width:r.width+"px", height:r.height+"px", opacity:1, offset:.15},
     {left:"0px", top:"0px", width:innerWidth+"px", height:innerHeight+"px", opacity:1}
-  ], {duration:820, easing:inout, fill:"forwards"});
+  ], {duration:FINE ? 820 : 420, easing:inout, fill:"forwards"});
   A.onfinish = () => {
     Object.assign(w.style, {left:"0px", top:"0px", width:"100vw", height:"100vh", opacity:1}); A.cancel();
     mid();
@@ -567,7 +579,10 @@ function flip(fc){
   const i = [...fc.parentNode.children].indexOf(fc), r = fc.getBoundingClientRect();
   if (fc.classList.contains("flipped")){
     field.burst(r.left + r.width/2, r.top + r.height/2, 20, ["255,216,74","125,255,79","255,255,255"]);
-    if (!flips.has(i)){ flips.add(i); addScore(100, r.left + r.width/2 - 20, r.top + 20); if (flips.size === jokes.length) setTimeout(() => { ach("joke"); toast("ALL PUNCHLINES FOUND · +1000"); addScore(1000); SFX.unlock(); }, 500); }
+    if (!flips.has(i)){
+      flips.add(i); award("joke:" + i, ONCE, 100, r.left + r.width/2 - 20, r.top + 20);   // each punchline pays once, ever (was: again every visit)
+      if (flips.size === jokes.length) setTimeout(() => { ach("joke"); const first = xpOK("jokes-all", ONCE); toast(first ? "ALL PUNCHLINES FOUND · +1000" : "ALL PUNCHLINES FOUND"); if (first) addScore(1000); SFX.unlock(); }, 500);
+    }
   }
   const c = $("flipc"); if (c) c.textContent = `PUNCHLINES FOUND ${flips.size}/${jokes.length}`;
 }
@@ -653,7 +668,7 @@ addEventListener("click", e => {
   if (e.target.closest("button,a,.unit,.fc,.pop,.ph,.lv,.cm,.vpick,.ed,#lb,#gameover,#boot,input,textarea,video,.lovebar,.pin,.hud,.screen,.mini,.kara,.gb,.mm-wrap,.recipe,.secret,#hs,#achp,.mm-side")) return;
   if (document.body.classList.contains("love")){ loveBurst(e.clientX, e.clientY, 12); SFX.heart(); }
   else { field.burst(e.clientX, e.clientY, 22); SFX.point(); }
-  if (field.spawn(e.clientX, e.clientY)){ addScore(50, e.clientX + 8, e.clientY - 10); if (++POPS === 10) ach("pop"); }
+  if (field.spawn(e.clientX, e.clientY)){ award("pop", {gap:1200, max:10, per:10*MIN}, 50, e.clientX + 8, e.clientY - 10); if (++POPS === 10) ach("pop"); }   // popping still counts for the trophy; XP is rate-limited
 });
 
 /* ---------------- secret code ---------------- */
@@ -662,7 +677,7 @@ addEventListener("click", e => {
   addEventListener("keydown", e => {
     if (e.target.closest?.(".ed,input")) return;
     at = e.key === code[at] ? at + 1 : (e.key === code[0] ? 1 : 0);
-    if (at === code.length){ at = 0; toast("CHEAT ACTIVATED · +30 LIVES"); ach("cheat"); SFX.unlock(); addScore(30000); for (let i = 0; i < 12; i++) setTimeout(() => field.burst(Math.random()*innerWidth, Math.random()*innerHeight*.8, 26), i*120); }
+    if (at === code.length){ at = 0; const first = xpOK("cheat", ONCE); toast(first ? "CHEAT ACTIVATED · +30 LIVES" : "CHEAT ALREADY USED"); ach("cheat"); SFX.unlock(); if (first) addScore(30000); for (let i = 0; i < 12; i++) setTimeout(() => field.burst(Math.random()*innerWidth, Math.random()*innerHeight*.8, 26), i*120); }
   });
 })();
 function toast(t){ const el = document.createElement("div"); el.className = "toast"; el.textContent = t; document.body.appendChild(el); setTimeout(() => el.remove(), 3000); }
@@ -682,11 +697,13 @@ let loveOpen = false, goTimer = 0;
     document.body.appendChild(h); setTimeout(() => h.remove(), 11500);
   }, 650);
 })();
+let LIVE_FX = 0;   // floating hearts/petals currently in the DOM; capped so mashing a button can't pile up hundreds of animated nodes
 function petalBurst(x, y, n){
+  if (LIVE_FX > 90) return;
   for (let i = 0; i < n; i++){
     const p = document.createElement("span"), a = Math.random()*6.283, v = 60 + Math.random()*140;
     p.className = "pp"; p.style.cssText = `left:${x}px;top:${y}px;--s:${10 + (i%3)*5}px;--tx:${Math.cos(a)*v}px;--ty:${Math.sin(a)*v - 30}px;--rot:${Math.round(Math.random()*720 - 360)}deg`;
-    document.body.appendChild(p); setTimeout(() => p.remove(), 1300);
+    document.body.appendChild(p); LIVE_FX++; setTimeout(() => { p.remove(); LIVE_FX--; }, 1300);
   }
 }
 const LILY_PETAL = "M0 0C9-9 13-27 4-44C2-48-2-48-4-44C-13-27-9-9 0 0Z";
@@ -728,12 +745,13 @@ function matchaSvg(){
 }
 function closeGO(){ clearInterval(goTimer); $("gameover").classList.remove("on"); }
 function loveBurst(x, y, n){
-  const cols = ["#ff6fb0","#ff5c9d","#ffd0e2","#ff3b6b"];
+  if (LIVE_FX > 90) return;
+  const cols =["#ff6fb0","#ff5c9d","#ffd0e2","#ff3b6b"];
   for (let i = 0; i < n; i++){
     const p = document.createElement("span"), a = Math.random()*6.283, v = 50 + Math.random()*130;
     p.className = "hp";
     p.style.cssText = `left:${x}px;top:${y}px;--s:${[10,13,16,20][i%4]}px;--c:${cols[i%4]};--tx:${Math.cos(a)*v}px;--ty:${Math.sin(a)*v - 40}px`;
-    document.body.appendChild(p); setTimeout(() => p.remove(), 900);
+    document.body.appendChild(p); LIVE_FX++; setTimeout(() => { p.remove(); LIVE_FX--; }, 900);
   }
 }
 function gameOver(){
@@ -755,11 +773,14 @@ function renderLove(f){
     observe($("body"));
     const inp = $("pw"), boxes = [...document.querySelectorAll("#pin i")];
     const paint = () => boxes.forEach((b, i) => { const on = i < inp.value.length; if (on && !b.firstChild) b.innerHTML = heart(); if (!on) b.innerHTML = ""; b.classList.toggle("on", on); b.classList.toggle("cur", i === inp.value.length && document.activeElement === inp); });
+    let unlocking = false;   // typing the 6th digit AND pressing Enter/UNLOCK used to run this twice (double XP)
     const check = () => {
+      if (unlocking) return;
       if (inp.value.length < 6){ $("lkmsg").textContent = "6 DIGITS NEEDED"; SFX.err(); return; }
       if (inp.value === LOVE_PASS){
+        unlocking = true;
         $("lkmsg").textContent = "ACCESS GRANTED ♥"; ach("love"); $("pin").classList.add("ok"); inp.blur(); SFX.unlock();
-        const r = $("pin").getBoundingClientRect(); loveBurst(r.left + r.width/2, r.top, 34); addScore(5000, r.left + r.width/2, r.top - 20);
+        const r = $("pin").getBoundingClientRect(); loveBurst(r.left + r.width/2, r.top, 34); award("lovepin", ONCE, 5000, r.left + r.width/2, r.top - 20);
         document.querySelector(".lockheart").animate([{transform:"scale(1)"}, {transform:"scale(1.8)", opacity:0}], {duration:700, easing:"steps(7)", fill:"forwards"});
         setTimeout(() => { loveOpen = true; renderBody(); }, 850);
       } else { SFX.err(); $("pin").classList.remove("shake"); void $("pin").offsetWidth; $("pin").classList.add("shake"); setTimeout(gameOver, 500); }
@@ -801,7 +822,7 @@ function renderLove(f){
   let sent = 0;
   $("send").onclick = e => {
     const r = e.currentTarget.getBoundingClientRect(); loveBurst(r.left + r.width/2, r.top, 18); SFX.heart();
-    $("lc").textContent = ++sent; addScore(50, r.left + r.width/2, r.top - 10);
+    $("lc").textContent = ++sent; award("love-send", {gap:1500, max:10, per:10*MIN}, 50, r.left + r.width/2, r.top - 10);
     if (sent % 10 === 0){ toast("LOVE LEVEL UP ♥ x" + sent/10); SFX.unlock(); }
   };
   $("shuf").onclick = () => { SFX.select(); renderBody(); };
@@ -809,7 +830,7 @@ function renderLove(f){
   $("fv-lily").onclick = e => {
     const c = e.currentTarget, r = c.getBoundingClientRect(); lil++;
     c.classList.remove("bloom"); void c.offsetWidth; c.classList.add("bloom"); SFX.heart();
-    petalBurst(r.left + r.width/2, r.top + r.height*.38, 16); addScore(30, r.left + r.width/2, r.top);
+    petalBurst(r.left + r.width/2, r.top + r.height*.38, 16); award("love-lily", {gap:1500, max:10, per:10*MIN}, 30, r.left + r.width/2, r.top);
     $("fv-ln").textContent = lil === 1 ? "1 RED LILY FOR YOU ♥" : `${lil} RED LILIES FOR YOU ♥`;
     if (lil % 12 === 0){ toast("A WHOLE BOUQUET FOR DRIKCY ♥"); SFX.unlock(); }
   };
@@ -862,6 +883,23 @@ async function api(path, opt = {}){
 }
 const jget = (k, d) => { try { const v = load(k); return v ? JSON.parse(v) : d; } catch(e){ return d; } };
 const jset = (k, v) => save(k, JSON.stringify(v));
+
+/* ---------------- XP anti-farming ----------------
+   Mashing a button must never print unlimited XP. Every XP source goes through award():
+   ONCE            -> only the first time, ever (remembered in this browser)
+   {gap,max,per}   -> at most `max` awards per `per` ms, and never closer together than `gap` ms
+   This stops accidental spam-farming; it is not tamper-proof (a visitor can still edit their own localStorage). */
+const XPLOG = (() => { const v = jget("xplog", {}); return v && typeof v === "object" && !Array.isArray(v) ? v : {}; })();
+function xpOK(key, r){
+  const now = Date.now();
+  if (r.once){ if (XPLOG[key]) return false; XPLOG[key] = 1; jset("xplog", XPLOG); return true; }
+  const a = (Array.isArray(XPLOG[key]) ? XPLOG[key] : []).filter(t => now - t < r.per);
+  if (a.length >= r.max || (a.length && now - a[a.length - 1] < r.gap)){ XPLOG[key] = a; return false; }
+  a.push(now); XPLOG[key] = a; jset("xplog", XPLOG); return true;
+}
+function award(key, r, n, x, y){ if (!xpOK(key, r)) return false; addScore(n, x, y); return true; }
+const ONCE = {once:true};
+const MIN = 60000, HOUR = 3600000;
 function ago(sec){
   const s = Math.max(1, Math.floor(Date.now()/1000 - sec));
   if (s < 60) return "JUST NOW"; if (s < 3600) return Math.floor(s/60) + " MIN AGO";
@@ -1084,6 +1122,7 @@ function memoryWire(){
   $("mm-new").onclick = () => { SFX.select(); memoryStart(); };
   $("mm").addEventListener("click", e => {
     const c = e.target.closest(".mc"); if (!c || MM.lock || c.classList.contains("up")) return;
+    const game = MM;   // NEW GAME mid-round used to leave old timers running and still pay out / post a score for the abandoned round
     if (!MM.t0){ MM.t0 = Date.now(); MM.tick = setInterval(() => { if (!$("mm-time")){ clearInterval(MM.tick); return; } const s = Math.floor((Date.now() - MM.t0)/1000); $("mm-time").textContent = `${pad2(Math.floor(s/60))}:${pad2(s%60)}`; }, 500); }
     c.classList.add("up"); SFX.flip(); MM.open.push(c);
     if (MM.open.length < 2) return;
@@ -1091,10 +1130,11 @@ function memoryWire(){
     const [a, b] = MM.open; MM.open = [];
     if (a.dataset.k === b.dataset.k){
       MM.pairs++; $("mm-pairs").textContent = `${MM.pairs}/6`;
-      setTimeout(() => { a.classList.add("ok"); b.classList.add("ok"); SFX.coin(); const r = b.getBoundingClientRect(); field.burst(r.left + r.width/2, r.top + r.height/2, 18); addScore(200, r.left + r.width/2, r.top); }, 280);
+      setTimeout(() => { if (MM !== game) return; a.classList.add("ok"); b.classList.add("ok"); SFX.coin(); const r = b.getBoundingClientRect(); field.burst(r.left + r.width/2, r.top + r.height/2, 18); award("mem-pair", {gap:0, max:12, per:HOUR}, 200, r.left + r.width/2, r.top); }, 280);
       if (MM.pairs === 6){
         clearInterval(MM.tick); const moves = MM.moves;
         setTimeout(async () => {
+          if (MM !== game) return;
           SFX.unlock(); ach("memory");
           const ini = await askInitials(`CLEARED IN ${moves} MOVES`, "MEMORY MATCH");
           await postScore("memory", ini, moves); renderBoard($("hs-memory"), "memory", ini);
@@ -1169,7 +1209,7 @@ function chickenWire(){
           S.items.splice(i, 1);
           const r = cv.getBoundingClientRect(), sx = r.left + it.x*PX, sy = r.top + (LH - 12)*PX;
           if (it.k === "bomb"){ S.lives--; SFX.err(); field.burst(sx, sy, 22, ["255,177,43","255,80,60","60,60,60"]); wrap.animate([{transform:"translateX(-6px)"},{transform:"translateX(6px)"},{transform:"none"}], {duration:240, easing:"steps(3)"}); }
-          else { const p = it.k === "gold" ? 5 : 1; S.score += p; S.caught++; SFX.coin(); field.burst(sx, sy, it.k === "gold" ? 20 : 8, ["255,216,74","255,154,60"]); addScore(p * 10); if (S.caught === 15) ach("chef"); }
+          else { const p = it.k === "gold" ? 5 : 1; S.score += p; S.caught++; SFX.coin(); field.burst(sx, sy, it.k === "gold" ? 20 : 8, ["255,216,74","255,154,60"]); award("chef-catch", {gap:0, max:90, per:HOUR}, p * 10); if (S.caught === 15) ach("chef"); }
         } else if (it.y > LH){ S.items.splice(i, 1); if (it.k !== "bomb"){ S.lives--; SFX.blip(); } }
       }
       if (S.lives <= 0) over();
@@ -1295,7 +1335,7 @@ function guestWire(){
   $("wf-booth").onclick = boothOpen; $("wf-phx").onclick = () => { wallPhoto = null; paintPhoto(); SFX.back(); }; paintPhoto();
   $("wf").querySelector(".sw").addEventListener("click", e => { const b = e.target.closest("[data-c]"); if (!b) return; wallColor = b.dataset.c; $("wf").querySelectorAll(".sw button").forEach(x => { x.classList.toggle("on", x === b); x.setAttribute("aria-checked", x === b); }); SFX.blip(); });
   $("wf").addEventListener("submit", async e => {
-    e.preventDefault();
+    e.preventDefault(); if ($("wf-go").disabled) return;   // ignore extra Enter/clicks while a post is already in flight
     const name = $("wf-name").value.trim().slice(0, 24) || "PLAYER 2", text = body.value.trim();
     const msg = $("wf-msg"); if (!text && !wallPhoto){ msg.textContent = "WRITE A MESSAGE OR ADD A PHOTO"; SFX.err(); return; }
     $("wf-go").disabled = true; msg.textContent = "PINNING…";
@@ -1304,7 +1344,7 @@ function guestWire(){
       try { m = SB ? await sbPost({name, body:text, color:wallColor, photo:wallPhoto}) : await api("/api/messages", {method:"POST", body:JSON.stringify({name, body:text, color:wallColor, photo:wallPhoto})}); }
       catch(err){ if (API || SB) throw err; const all = jget("msgs", []); m = {id:Date.now(), name, body:text, color:wallColor, photo:wallPhoto, mine:true, at:Date.now()/1000}; all.unshift(m); jset("msgs", all); }
       body.value = ""; $("wf-count").textContent = "0/280"; wallPhoto = null; paintPhoto(); msg.textContent = "PINNED ✓ THANK YOU"; SFX.unlock(); ach("guest");
-      const r = $("wf-go").getBoundingClientRect(); field.burst(r.left + r.width/2, r.top, 24); addScore(300, r.left + r.width/2, r.top - 10);
+      const r = $("wf-go").getBoundingClientRect(); field.burst(r.left + r.width/2, r.top, 24); award("wall-post", {gap:30000, max:3, per:HOUR}, 300, r.left + r.width/2, r.top - 10);
       await drawNotes(m.id);
     } catch(err){ msg.textContent = (err.message || "COULD NOT PIN").toUpperCase(); SFX.err(); }
     finally { $("wf-go").disabled = false; }
