@@ -55,6 +55,11 @@ Then visit `http://localhost:8000`. Serving locally is recommended for consisten
 
 ## Changelog
 
+### 1.0.1 — 2026-11-17
+
+- Fixed the custom pixel reticle being hidden behind overlays by raising it above the interface layers.
+- Added descriptive reticle labels to photo booth controls, including close, capture, upload, retake, and use-photo actions.
+
 ### 1.0.0 — Initial Release
 
 - Added standalone HTML pages for all eight memory categories, with homepage and back-to-home navigation.

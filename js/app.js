@@ -1358,14 +1358,14 @@ function boothOpen(){
   const el = document.createElement("div"); el.id = "booth"; el.setAttribute("role", "dialog"); el.setAttribute("aria-label", "Photo booth");
   const looks = CAN_FILTER ? Object.keys(LOOKS) : ["normal"];
   el.innerHTML = `<div class="bth">
-    <div class="bth-top"><b>PHOTO BOOTH</b><button type="button" class="px-btn" id="bth-x" aria-label="Close photo booth">✕</button></div>
+    <div class="bth-top"><b>PHOTO BOOTH</b><button type="button" class="px-btn" id="bth-x" aria-label="Close photo booth" data-cursor="CLOSE">✕</button></div>
     <div class="bth-view" id="bth-view"><video id="bth-v" playsinline muted autoplay></video><img id="bth-r" alt="Your photo" hidden><div class="bth-count" id="bth-n"></div><div class="bth-flash" id="bth-f"></div><p class="bth-msg" id="bth-m">STARTING CAMERA…</p></div>
     <div id="bth-main">
-      <div class="bth-opts"><span>MODE</span><button type="button" class="chip on" data-mode="single">SINGLE</button><button type="button" class="chip" data-mode="strip">STRIP ×3</button></div>
-      <div class="bth-opts"><span>LOOK</span>${looks.map(l => `<button type="button" class="chip${l === "normal" ? " on" : ""}" data-look="${l}">${l.toUpperCase()}</button>`).join("")}</div>
-      <div class="bth-btns"><button type="button" class="px-btn solid" id="bth-snap">● SNAP</button><button type="button" class="px-btn" id="bth-up">⬆ UPLOAD</button><input type="file" id="bth-file" accept="image/*" hidden></div>
+      <div class="bth-opts"><span>MODE</span><button type="button" class="chip on" data-mode="single" data-cursor="">SINGLE</button><button type="button" class="chip" data-mode="strip" data-cursor="">STRIP ×3</button></div>
+      <div class="bth-opts"><span>LOOK</span>${looks.map(l => `<button type="button" class="chip${l === "normal" ? " on" : ""}" data-look="${l}" data-cursor="">${l.toUpperCase()}</button>`).join("")}</div>
+      <div class="bth-btns"><button type="button" class="px-btn solid" id="bth-snap" data-cursor="SNAP">● SNAP</button><button type="button" class="px-btn" id="bth-up" data-cursor="UPLOAD">⬆ UPLOAD</button><input type="file" id="bth-file" accept="image/*" hidden></div>
     </div>
-    <div class="bth-btns" id="bth-after" hidden><button type="button" class="px-btn" id="bth-re">↻ RETAKE</button><button type="button" class="px-btn solid" id="bth-use">✓ USE THIS</button></div>
+    <div class="bth-btns" id="bth-after" hidden><button type="button" class="px-btn" id="bth-re" data-cursor="RETAKE">↻ RETAKE</button><button type="button" class="px-btn solid" id="bth-use" data-cursor="USE IT">✓ USE THIS</button></div>
   </div>`;
   el.addEventListener("click", e => e.stopPropagation());
   document.body.appendChild(el); document.addEventListener("keydown", boothKey, true);
